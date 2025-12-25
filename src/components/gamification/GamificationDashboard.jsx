@@ -14,46 +14,46 @@ export default function GamificationDashboard({ userId }) {
     streak: 0,
     badges: [],
     rank: 0,
-    achievements: []
+    achievements: [],
   });
 
   console.log("GamificationDashboard - XP from context:", xp);
 
-  useEffect(() => {
-    if (userId) {
-      fetchGamificationStats();
-      
-      // Refresh stats every 5 seconds for real-time updates
-      const interval = setInterval(fetchGamificationStats, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [userId]);
+  // useEffect(() => {
+  //   if (userId) {
+  //     fetchGamificationStats();
+
+  //     // Refresh stats every 5 seconds for real-time updates
+  //     const interval = setInterval(fetchGamificationStats, 5000);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [userId]);
 
   const fetchGamificationStats = async () => {
     try {
       const res = await fetch(`/api/gamification/stats?userId=${userId}`);
       const data = await res.json();
-      
+
       console.log("GamificationDashboard - Fetched data:", data);
-      
+
       if (data.error) {
         setStats({
           level: 1,
           streak: 0,
           badges: [],
           rank: 0,
-          achievements: []
+          achievements: [],
         });
         return;
       }
-      
+
       // Use data from API but XP will come from context
       setStats({
         level: data.level || 1,
         streak: data.streak || 0,
         badges: data.badges || [],
         rank: data.rank || 0,
-        achievements: data.achievements || []
+        achievements: data.achievements || [],
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -62,7 +62,7 @@ export default function GamificationDashboard({ userId }) {
         streak: 0,
         badges: [],
         rank: 0,
-        achievements: []
+        achievements: [],
       });
     }
   };
@@ -136,7 +136,9 @@ export default function GamificationDashboard({ userId }) {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm">Progress to Level {stats.level + 1}</CardTitle>
-            <span className="text-xs text-muted-foreground">{xp % 1000} / {xpToNextLevel}</span>
+            <span className="text-xs text-muted-foreground">
+              {xp % 1000} / {xpToNextLevel}
+            </span>
           </div>
         </CardHeader>
         <CardContent>
@@ -158,9 +160,7 @@ export default function GamificationDashboard({ userId }) {
                 <div
                   key={badge.id}
                   className={`p-2 border rounded text-center transition-all ${
-                    earned 
-                      ? "border-yellow-400 bg-yellow-50 dark:bg-yellow-950" 
-                      : "opacity-40 grayscale"
+                    earned ? "border-yellow-400 bg-yellow-50 dark:bg-yellow-950" : "opacity-40 grayscale"
                   }`}
                   title={`${badge.name}: ${badge.description}`}
                 >

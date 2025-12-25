@@ -3,7 +3,19 @@ import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { User, LogIn, Palette, Trophy, BarChart3, Upload, Flame, Sparkles, Code2, Youtube, BookOpen } from "lucide-react";
+import {
+  User,
+  LogIn,
+  Palette,
+  Trophy,
+  BarChart3,
+  Upload,
+  Flame,
+  Sparkles,
+  Code2,
+  Youtube,
+  BookOpen,
+} from "lucide-react";
 import { CgDetailsMore } from "react-icons/cg";
 import { authenti } from "./new";
 import { Sun, Moon } from "lucide-react";
@@ -50,7 +62,7 @@ const Navbar = () => {
     const fetchSession = async () => {
       let session = await authenti();
       setSession(session);
-      
+
       // Fetch streak if user is logged in
       if (session?.user?.email) {
         fetchStreak(session.user.email);
@@ -71,15 +83,15 @@ const Navbar = () => {
   };
 
   // Poll for streak updates every 10 seconds
-  useEffect(() => {
-    if (session?.user?.email) {
-      const interval = setInterval(() => {
-        fetchStreak(session.user.email);
-      }, 10000); // Update every 10 seconds
-      
-      return () => clearInterval(interval);
-    }
-  }, [session]);
+  // useEffect(() => {
+  //   if (session?.user?.email) {
+  //     const interval = setInterval(() => {
+  //       fetchStreak(session.user.email);
+  //     }, 10000); // Update every 10 seconds
+
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [session]);
 
   // Sign out user
   const signOutUser = async () => {
@@ -134,7 +146,10 @@ const Navbar = () => {
             }}
             className="w-[360px] h-screen bg-background/95 backdrop-blur-xl fixed top-0 left-0 flex flex-col justify-between z-10 sidebar border-r border-slate-200/20 shadow-2xl"
           >
-            <div className="flex flex-col gap-3 overflow-y-auto flex-1 p-4 pb-0" style={{ maxHeight: 'calc(100vh - 100px)' }}>
+            <div
+              className="flex flex-col gap-3 overflow-y-auto flex-1 p-4 pb-0"
+              style={{ maxHeight: "calc(100vh - 100px)" }}
+            >
               <Button
                 variant={"ghost"}
                 className="items-center w-max hover:bg-slate-100/80 transition-all duration-200"
@@ -146,11 +161,11 @@ const Navbar = () => {
                 <nav>
                   <ul className="flex flex-col max-md:text-lg ml-4 gap-3 ">
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
-                        href={session ? `/roadmap` : "/"} 
+                      <Link
+                        href={session ? `/roadmap` : "/"}
                         className={`block py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          isActiveLink("/roadmap") || isActiveLink("/") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          isActiveLink("/roadmap") || isActiveLink("/")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -158,11 +173,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/generate"
                         className={`block py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          isActiveLink("/generate") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          isActiveLink("/generate")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -170,11 +185,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/courses"
                         className={`flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          pathname?.startsWith("/courses") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          pathname?.startsWith("/courses")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -183,11 +198,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/studio"
                         className={`flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          isActiveLink("/studio") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          isActiveLink("/studio")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -196,11 +211,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/content-ingestion"
                         className={`flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          isActiveLink("/content-ingestion") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          isActiveLink("/content-ingestion")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -209,11 +224,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/code-editor"
                         className={`flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          isActiveLink("/code-editor") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          isActiveLink("/code-editor")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -222,11 +237,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/youtube-course"
                         className={`flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          isActiveLink("/youtube-course") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          isActiveLink("/youtube-course")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -235,11 +250,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/features"
                         className={`block py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          pathname?.startsWith("/features") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          pathname?.startsWith("/features")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -247,11 +262,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/demo"
                         className={`block py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          isActiveLink("/demo") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          isActiveLink("/demo")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -259,11 +274,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li onClick={() => setSidebar(false)}>
-                      <Link 
+                      <Link
                         href="/contact"
                         className={`block py-2 px-3 rounded-lg transition-all duration-200 hover:bg-slate-100/80 ${
-                          isActiveLink("/contact") 
-                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500" 
+                          isActiveLink("/contact")
+                            ? "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-500"
                             : ""
                         }`}
                       >
@@ -298,11 +313,9 @@ const Navbar = () => {
                     <li
                       onClick={() => {
                         setSidebar(false);
-                        document
-                          .getElementById("how-it-works")
-                          ?.scrollIntoView({
-                            behavior: "smooth",
-                          });
+                        document.getElementById("how-it-works")?.scrollIntoView({
+                          behavior: "smooth",
+                        });
                       }}
                     >
                       <Link href="#how-it-works" scroll={false}>
@@ -336,9 +349,7 @@ const Navbar = () => {
                     <Link href={"/profile"} onClick={() => setSidebar(false)}>
                       <Avatar className={"w-7 mx-1 h-7"}>
                         <AvatarImage src={session?.user.image} alt={"logo"} />
-                        <AvatarFallback>
-                          {session?.user.name[0].toUpperCase()}
-                        </AvatarFallback>
+                        <AvatarFallback>{session?.user.name[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
                     </Link>
                     <Button
@@ -360,7 +371,7 @@ const Navbar = () => {
                       {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                     </Button>
                     <Link href="/login" onClick={() => setSidebar(false)}>
-                      <Button size="sm" >
+                      <Button size="sm">
                         <LogIn className="w-4 h-4 mr-1"></LogIn>Login
                       </Button>
                     </Link>
@@ -387,12 +398,7 @@ const Navbar = () => {
             href={session ? `/roadmap` : "/"}
             className="flex gap-1 items-center hover:scale-105 transition-transform duration-200"
           >
-            <Image
-              src="/InnoVision_LOGO-removebg-preview.png"
-              alt="logo"
-              width={48}
-              height={48}
-            />
+            <Image src="/InnoVision_LOGO-removebg-preview.png" alt="logo" width={48} height={48} />
 
             <h2 className="text-xl md:text-3xl font-extrabold">InnoVision</h2>
           </Link>
@@ -432,9 +438,7 @@ const Navbar = () => {
               </div>
               <div className="flex gap-2 items-center rounded-2xl border-2 px-4 py-2 border-orange-500/50 bg-orange-50/50 dark:bg-orange-950/20">
                 <Flame className="h-4 w-4 text-orange-500" />
-                <span className="text-orange-600 dark:text-orange-400 font-bold">
-                  {streak}
-                </span>
+                <span className="text-orange-600 dark:text-orange-400 font-bold">{streak}</span>
               </div>
             </>
           )}
@@ -457,9 +461,7 @@ const Navbar = () => {
               </Link>
             ) : (
               <Link href="/login">
-                <Button size="sm">
-                  Login
-                </Button>
+                <Button size="sm">Login</Button>
               </Link>
             )}
           </div>

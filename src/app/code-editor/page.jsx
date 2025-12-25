@@ -22,7 +22,7 @@ export default function CodeEditor() {
       const response = await fetch("/api/code/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, language })
+        body: JSON.stringify({ code, language }),
       });
       const data = await response.json();
       setOutput(data.output || data.error);
@@ -42,7 +42,7 @@ export default function CodeEditor() {
       const response = await fetch("/api/code/generate-website", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: websitePrompt })
+        body: JSON.stringify({ prompt: websitePrompt }),
       });
       const data = await response.json();
       setGeneratedWebsite(data.html);
@@ -101,8 +101,6 @@ export default function CodeEditor() {
                         <SelectItem value="java">Java</SelectItem>
                         <SelectItem value="cpp">C++</SelectItem>
                         <SelectItem value="c">C</SelectItem>
-                        <SelectItem value="html">HTML</SelectItem>
-                        <SelectItem value="css">CSS</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -141,9 +139,7 @@ export default function CodeEditor() {
               <Card>
                 <CardHeader>
                   <CardTitle>Describe Your Website</CardTitle>
-                  <CardDescription>
-                    Tell AI what kind of website you want to create
-                  </CardDescription>
+                  <CardDescription>Tell AI what kind of website you want to create</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Textarea
@@ -152,11 +148,7 @@ export default function CodeEditor() {
                     placeholder="Example: Create a portfolio website with a hero section, about me, projects gallery, and contact form. Use modern design with blue and white colors."
                     className="min-h-[300px]"
                   />
-                  <Button 
-                    onClick={generateWebsite} 
-                    disabled={isGenerating}
-                    className="w-full"
-                  >
+                  <Button onClick={generateWebsite} disabled={isGenerating} className="w-full">
                     <Sparkles className="h-4 w-4 mr-2" />
                     {isGenerating ? "Generating..." : "Generate Website"}
                   </Button>
@@ -179,11 +171,7 @@ export default function CodeEditor() {
                 <CardContent>
                   {generatedWebsite ? (
                     <div className="space-y-4">
-                      <Textarea
-                        value={generatedWebsite}
-                        readOnly
-                        className="font-mono min-h-[300px]"
-                      />
+                      <Textarea value={generatedWebsite} readOnly className="font-mono min-h-[300px]" />
                       <div className="border rounded-lg p-4 bg-white">
                         <p className="text-sm text-muted-foreground mb-2">Preview:</p>
                         <iframe
@@ -194,9 +182,7 @@ export default function CodeEditor() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground text-center py-20">
-                      Generated website will appear here...
-                    </p>
+                    <p className="text-muted-foreground text-center py-20">Generated website will appear here...</p>
                   )}
                 </CardContent>
               </Card>
