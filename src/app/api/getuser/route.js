@@ -15,7 +15,27 @@ export async function GET(req) {
       return NextResponse.json({ message: "user not found" }, { status: 404 });
     }
 
-    return NextResponse.json(userSnap.data());
+    const userData = userSnap.data();
+
+    // If createdAt doesn't exist, add it now
+    if (!userData.createdAt) {
+      const createdAt = Date.now();
+      await docRef.update({ createdAt });
+      userData.createdAt = createdAt;
+    }
+
+    // If xptrack doesn't exist, initialize it
+    if (!userData.xptrack) {
+      const xptrack = Object.fromEntries(
+        Array(12)
+          .fill(0)
+          .map((value, index) => [index, value])
+      );
+      await docRef.update({ xptrack });
+      userData.xptrack = xptrack;
+    }
+
+    return NextResponse.json(userData);
   } catch (error) {
     console.error("Error in getuser route:", error);
     return NextResponse.json({ message: "internal server error" }, { status: 500 });

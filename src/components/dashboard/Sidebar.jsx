@@ -29,6 +29,18 @@ const Sidebar = ({ user, rank, difficultyLevel, leaderboard, onUserUpdate }) => 
                 return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
             }
             
+            // Handle Firestore Timestamp with _seconds (serialized format)
+            if (dateValue._seconds) {
+                const date = new Date(dateValue._seconds * 1000);
+                return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+            }
+            
+            // Handle numeric timestamp (milliseconds)
+            if (typeof dateValue === 'number') {
+                const date = new Date(dateValue);
+                return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+            }
+            
             // Handle ISO string or regular date
             const date = new Date(dateValue);
             if (isNaN(date.getTime())) {

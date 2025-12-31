@@ -102,8 +102,14 @@ const Navbar = () => {
 
   // Sign out user
   const signOutUser = async () => {
-    await logout();
-    router.push("/");
+    try {
+      await logout();
+      // Force full page reload to clear all state
+      window.location.replace("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      window.location.replace("/");
+    }
   };
 
   // Close sidebar on click outside
