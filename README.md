@@ -39,6 +39,31 @@ InnoVision is a cutting-edge AI-powered learning platform that dynamically gener
 
 ---
 
+## 🎨 Modern UI/UX
+
+### Icon-Based Navigation
+- Clean, centered icon navigation bar with tooltips on hover
+- Quick access to all features without dropdown menus
+- Responsive design with mobile hamburger menu
+- Visual indicators for active pages
+
+### Navigation Icons
+| Icon | Feature | Description |
+|------|---------|-------------|
+| ✨ Sparkles | AI Course Generator | Generate courses with AI |
+| 🎨 Palette | Course Studio | Design custom courses |
+| 📤 Upload | Content Ingestion | Import existing content |
+| ▶️ YouTube | YouTube Course | Learn from YouTube videos |
+| 🏠 Home | My Courses | Your learning dashboard |
+| 📚 BookOpen | Browse Courses | Explore all courses |
+| 💻 Code | Code Editor | Practice coding |
+| 🏆 Trophy | Features | Platform features |
+| ⚡ Zap | Achievements | Badges & rewards |
+| 📊 BarChart | Demo | See how it works |
+| 💬 Message | Contact | Get in touch |
+
+---
+
 ## ✨ Features
 
 ### 🎯 AI-Powered Course Generation
@@ -85,6 +110,9 @@ InnoVision is a cutting-edge AI-powered learning platform that dynamically gener
 | **Code Editor** | Built-in code editor with AI assistance |
 | **LMS Integration** | Connect with Moodle and Canvas |
 | **Multimodal Content** | Generate audio scripts and video storyboards |
+| **Flashcards** | Create and study with AI-generated flashcards |
+| **Daily Goals** | Set and track daily learning goals |
+| **Projects** | Hands-on project-based learning |
 | **Research Platform** | Export anonymized datasets for research |
 | **7-Day Free Trial** | Full access to premium features for 7 days |
 
@@ -98,6 +126,7 @@ InnoVision is a cutting-edge AI-powered learning platform that dynamically gener
 | **Progress Tracking** | Visual progress bars with animations |
 | **Responsive Design** | Works on desktop, tablet, and mobile |
 | **PWA Support** | Install as a Progressive Web App |
+| **Icon Navigation** | Clean icon-based navbar with hover tooltips |
 
 ### 🔐 Platform Features
 | Feature | Description |
@@ -107,6 +136,8 @@ InnoVision is a cutting-edge AI-powered learning platform that dynamically gener
 | **Premium Celebration** | Confetti, sound effects, and animations on premium purchase |
 | **Real-time Sync** | Data syncs across devices via Firebase |
 | **Accessibility** | WCAG compliant with font size, contrast, and color blind modes |
+| **Privacy Policy** | Transparent data handling policies |
+| **Terms of Service** | Clear terms and conditions |
 
 ---
 
@@ -185,6 +216,7 @@ InnoVision is a cutting-edge AI-powered learning platform that dynamically gener
 - ✅ Unlimited offline downloads
 - ✅ LMS Integration
 - ✅ Study Reminders
+- ✅ Flashcards & Daily Goals
 - ✅ Priority support
 - ✅ PRO badge
 
@@ -284,24 +316,38 @@ InnoVision/
 │   │   ├── analytics/         # Analytics dashboard
 │   │   ├── chapter-test/      # Chapter tests
 │   │   ├── code-editor/       # Code editor page
+│   │   ├── contact/           # Contact page
 │   │   ├── content-ingestion/ # PDF/document import
 │   │   ├── courses/           # Course listing
 │   │   ├── curriculum/        # Curriculum browser (LKG-12)
-│   │   ├── features/          # Advanced features
+│   │   ├── demo/              # Demo page
+│   │   ├── features/          # Advanced features hub
+│   │   │   ├── analytics/     # Learning analytics
+│   │   │   ├── daily-goals/   # Daily goal tracking
+│   │   │   ├── flashcards/    # Flashcard system
+│   │   │   ├── lms/           # LMS integration
+│   │   │   ├── multimodal/    # Multimodal content
+│   │   │   ├── offline/       # Offline learning
+│   │   │   ├── personalization/ # AI personalization
+│   │   │   └── projects/      # Project-based learning
 │   │   ├── gamification/      # Gamification dashboard
 │   │   ├── generate/          # Course generation
+│   │   ├── login/             # Authentication
 │   │   ├── premium/           # Premium subscription page
+│   │   ├── privacy/           # Privacy policy
 │   │   ├── profile/           # User profile & dashboard
 │   │   ├── research/          # Research platform
 │   │   ├── roadmap/           # Learning roadmaps
 │   │   ├── studio/            # Course studio
+│   │   ├── studio-course/     # Studio course viewer
+│   │   ├── terms/             # Terms of service
 │   │   └── youtube-course/    # YouTube course generator
 │   ├── components/            # Reusable components
 │   │   ├── chapter_content/   # Chapter display, BookmarkButton
 │   │   ├── dashboard/         # Sidebar, MotivationalQuote
 │   │   ├── gamification/      # XP, Streaks, Leaderboard, Badges
 │   │   ├── Landing/           # Hero, Features, HowItWorks, FAQ, CTA
-│   │   ├── Navbar/            # Navigation, Night Mode toggle
+│   │   ├── Navbar/            # Icon-based navigation with tooltips
 │   │   ├── premium/           # PremiumCelebration
 │   │   ├── profile/           # StatsCard, Bookmarks
 │   │   ├── settings/          # StudyReminders
@@ -380,6 +426,7 @@ InnoVision contributes to the following UN SDGs:
 | Study Reminders | ✅ Yes | ⚠️ Email | ⚠️ Email | ❌ No |
 | Free Tier | ✅ Generous | ⚠️ Limited | ❌ No | ✅ Yes |
 | Education Discount | ✅ 50% Off | ⚠️ Varies | ❌ No | ✅ Free |
+| Icon Navigation | ✅ Yes | ❌ No | ❌ No | ❌ No |
 | Price | ₹100/month | $39-59/month | $20-200/course | Free |
 
 ---
