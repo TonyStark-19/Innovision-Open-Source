@@ -35,7 +35,7 @@ InnoVision is a cutting-edge AI-powered learning platform that dynamically gener
 
 **Live Website:** [https://innovision7.live](https://innovision7.live)
 
-**GitHub Repository:** [https://github.com/ItsVikasA/InnoVision](https://github.com/ItsVikasA/InnoVision)
+**GitHub Repository:** [https://github.com/ItsVikasA/Innovision-Open-Source.git](https://github.com/ItsVikasA/Innovision-Open-Source.git)
 
 ---
 
