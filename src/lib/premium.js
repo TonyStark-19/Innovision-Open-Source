@@ -1,4 +1,16 @@
-import { adminDb } from "./firebase-admin";
+let adminDb = null;
+
+async function getDb() {
+  if (!adminDb) {
+    try {
+      const { getAdminDb } = await import("./firebase-admin");
+      adminDb = getAdminDb();
+    } catch (error) {
+      console.warn("Firebase Admin not available:", error.message);
+    }
+  }
+  return adminDb;
+}
 
 /**
  * Get user's account creation date
@@ -7,7 +19,10 @@ import { adminDb } from "./firebase-admin";
  */
 export async function getUserCreatedAt(userEmail) {
   try {
-    const userDoc = await adminDb.collection("users").doc(userEmail).get();
+    const db = await getDb();
+    if (!db) return null;
+    
+    const userDoc = await db.collection("users").doc(userEmail).get();
     
     if (!userDoc.exists) {
       return null;
@@ -28,10 +43,13 @@ export async function getUserCreatedAt(userEmail) {
  */
 export async function checkTrialStatus(userEmail) {
   try {
-    const userDoc = await adminDb.collection("users").doc(userEmail).get();
+    const db = await getDb();
+    if (!db) return { isInTrial: true, daysRemaining: 7, trialExpired: false };
+    
+    const userDoc = await db.collection("users").doc(userEmail).get();
     
     if (!userDoc.exists) {
-      return { isInTrial: false, daysRemaining: 0, trialExpired: false };
+      return { isInTrial: true, daysRemaining: 7, trialExpired: false };
     }
 
     const userData = userDoc.data();
@@ -48,7 +66,7 @@ export async function checkTrialStatus(userEmail) {
     };
   } catch (error) {
     console.error("Error checking trial status:", error);
-    return { isInTrial: false, daysRemaining: 0, trialExpired: true };
+    return { isInTrial: true, daysRemaining: 7, trialExpired: false };
   }
 }
 
@@ -59,7 +77,10 @@ export async function checkTrialStatus(userEmail) {
  */
 export async function isPremiumUser(userEmail) {
   try {
-    const userDoc = await adminDb.collection("users").doc(userEmail).get();
+    const db = await getDb();
+    if (!db) return false;
+    
+    const userDoc = await db.collection("users").doc(userEmail).get();
     
     if (!userDoc.exists) {
       return false;
@@ -110,7 +131,10 @@ export async function checkFullAccess(userEmail) {
  */
 export async function getUserCourseCount(userEmail) {
   try {
-    const snapshot = await adminDb
+    const db = await getDb();
+    if (!db) return 0;
+    
+    const snapshot = await db
       .collection("users")
       .doc(userEmail)
       .collection("roadmaps")
@@ -131,7 +155,10 @@ export async function getUserCourseCount(userEmail) {
  */
 export async function getYouTubeCourseCount(userEmail) {
   try {
-    const snapshot = await adminDb
+    const db = await getDb();
+    if (!db) return 0;
+    
+    const snapshot = await db
       .collection("users")
       .doc(userEmail)
       .collection("youtube-courses")
@@ -151,7 +178,10 @@ export async function getYouTubeCourseCount(userEmail) {
  */
 export async function getStudioCourseCount(userEmail) {
   try {
-    const snapshot = await adminDb
+    const db = await getDb();
+    if (!db) return 0;
+    
+    const snapshot = await db
       .collection("users")
       .doc(userEmail)
       .collection("studio-courses")
@@ -260,10 +290,13 @@ export async function canUseStudio(userEmail) {
  */
 export async function activatePremium(userEmail, durationMonths = 1, paymentId) {
   try {
+    const db = await getDb();
+    if (!db) return false;
+    
     const expiryDate = new Date();
     expiryDate.setMonth(expiryDate.getMonth() + durationMonths);
 
-    await adminDb.collection("users").doc(userEmail).set(
+    await db.collection("users").doc(userEmail).set(
       {
         isPremium: true,
         premiumActivatedAt: new Date().toISOString(),

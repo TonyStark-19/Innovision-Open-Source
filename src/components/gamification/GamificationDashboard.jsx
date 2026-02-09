@@ -64,7 +64,8 @@ export default function GamificationDashboard({ userId }) {
   };
 
   const xpToNextLevel = 500;
-  const xpProgress = (xp % 500) / 5;
+  const safeXp = typeof xp === 'number' ? xp : 0;
+  const xpProgress = (safeXp % 500) / 5;
 
   return (
     <div className="space-y-4">
@@ -80,7 +81,7 @@ export default function GamificationDashboard({ userId }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.level}</div>
-            <p className="text-xs text-muted-foreground">{xp} XP</p>
+            <p className="text-xs text-muted-foreground">{safeXp} XP</p>
           </CardContent>
         </Card>
 
