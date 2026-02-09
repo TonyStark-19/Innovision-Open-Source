@@ -25,51 +25,59 @@ const FillUps = ({ task, roadmapId, chapterNumber }) => {
   const checkAnswer = async () => {
     let correct = false;
     setSubmitting(true);
-    const normalizedUserAnswer = task.caseSensitive ? userAnswer.trim() : userAnswer.trim().toLowerCase();
+    
+    try {
+      const normalizedUserAnswer = task.caseSensitive ? userAnswer.trim() : userAnswer.trim().toLowerCase();
 
-    const normalizedAcceptableAnswers = task.acceptableAnswers.map((answer) =>
-      task.caseSensitive ? answer.trim() : answer.trim().toLowerCase()
-    );
+      const normalizedAcceptableAnswers = (task.acceptableAnswers || []).map((answer) =>
+        task.caseSensitive ? answer.trim() : answer.trim().toLowerCase()
+      );
 
-    correct = normalizedAcceptableAnswers.includes(normalizedUserAnswer);
+      correct = normalizedAcceptableAnswers.includes(normalizedUserAnswer);
 
-    const res = await fetch(`/api/tasks`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        task,
-        isCorrect: correct,
-        roadmap: roadmapId,
-        chapter: chapterNumber,
-        userAnswer,
-      }),
-    });
-    if (res.ok) {
-      setIsCorrect(correct);
-      setIsAnswered(true);
+      const res = await fetch(`/api/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          task,
+          isCorrect: correct,
+          roadmap: roadmapId,
+          chapter: chapterNumber,
+          userAnswer,
+        }),
+      });
+      
+      if (res.ok) {
+        setIsCorrect(correct);
+        setIsAnswered(true);
 
-      // Handle combo system
-      if (correct) {
-        incrementCombo();
-        // Show toast for combo XP after a small delay so combo updates first
-        setTimeout(() => {
-          const multiplier = getCurrentMultiplier();
-          if (multiplier > 1) {
-            toast.success(`+${2 * multiplier} XP (${multiplier}x combo!)`, {
-              icon: <Zap className="h-4 w-4 text-yellow-500" />,
-            });
-          }
-        }, 100);
+        // Handle combo system
+        if (correct) {
+          incrementCombo();
+          // Show toast for combo XP after a small delay so combo updates first
+          setTimeout(() => {
+            const multiplier = getCurrentMultiplier();
+            if (multiplier > 1) {
+              toast.success(`+${2 * multiplier} XP (${multiplier}x combo!)`, {
+                icon: <Zap className="h-4 w-4 text-yellow-500" />,
+              });
+            }
+          }, 100);
+        } else {
+          resetCombo();
+        }
+
+        // XP is now awarded server-side in /api/tasks
+        getXp();
       } else {
-        resetCombo();
+        const errorData = await res.json().catch(() => ({}));
+        toast.error(errorData.error || "Failed to submit task. Try again.");
       }
-
-      // XP is now awarded server-side in /api/tasks
-      getXp();
-    } else {
-      toast.error("Failed to submit task, Try again.");
+    } catch (error) {
+      console.error("Error submitting answer:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
     setSubmitting(false);
   };
@@ -114,6 +122,7 @@ const FillUps = ({ task, roadmapId, chapterNumber }) => {
                   placeholder="Answer"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && userAnswer.trim() !== "") {
+                      e.preventDefault();
                       checkAnswer();
                     }
                   }}

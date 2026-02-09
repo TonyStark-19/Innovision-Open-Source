@@ -26,43 +26,51 @@ export default function Quiz({ task, roadmapId, chapterNumber }) {
   const checkAnswer = async () => {
     setSubmitting(true);
     const correct = selectedOption === task.answer;
-    const res = await fetch(`/api/tasks`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        task,
-        isCorrect: correct,
-        roadmap: roadmapId,
-        chapter: chapterNumber,
-        userAnswer: selectedOption,
-      }),
-    });
-    if (res.ok) {
-      setIsCorrect(correct);
-      setIsAnswered(true);
+    
+    try {
+      const res = await fetch(`/api/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          task,
+          isCorrect: correct,
+          roadmap: roadmapId,
+          chapter: chapterNumber,
+          userAnswer: selectedOption,
+        }),
+      });
+      
+      if (res.ok) {
+        setIsCorrect(correct);
+        setIsAnswered(true);
 
-      // Handle combo system
-      if (correct) {
-        incrementCombo();
-        // Show toast for combo XP after a small delay so combo updates first
-        setTimeout(() => {
-          const multiplier = getCurrentMultiplier();
-          if (multiplier > 1) {
-            toast.success(`+${2 * multiplier} XP (${multiplier}x combo!)`, {
-              icon: <Zap className="h-4 w-4 text-yellow-500" />,
-            });
-          }
-        }, 100);
+        // Handle combo system
+        if (correct) {
+          incrementCombo();
+          // Show toast for combo XP after a small delay so combo updates first
+          setTimeout(() => {
+            const multiplier = getCurrentMultiplier();
+            if (multiplier > 1) {
+              toast.success(`+${2 * multiplier} XP (${multiplier}x combo!)`, {
+                icon: <Zap className="h-4 w-4 text-yellow-500" />,
+              });
+            }
+          }, 100);
+        } else {
+          resetCombo();
+        }
+
+        // XP is now awarded server-side in /api/tasks
+        getXp();
       } else {
-        resetCombo();
+        const errorData = await res.json().catch(() => ({}));
+        toast.error(errorData.error || "Failed to submit task. Try again.");
       }
-
-      // XP is now awarded server-side in /api/tasks
-      getXp();
-    } else {
-      toast.error("Failed to submit task, Try again.");
+    } catch (error) {
+      console.error("Error submitting quiz:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
     setSubmitting(false);
   };

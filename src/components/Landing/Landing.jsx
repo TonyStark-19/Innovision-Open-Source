@@ -6,6 +6,7 @@ import Testimonials from "./Testimonials";
 import CTA from "./CTA";
 import FAQ from "./FAQ";
 import Link from "next/link";
+import BackToTop from "./BackToTop";
 
 export default function Landing() {
   return (
@@ -165,6 +166,7 @@ export default function Landing() {
             </div>
           </div>
         </footer>
+        <BackToTop />
       </div>
     </div>
   );

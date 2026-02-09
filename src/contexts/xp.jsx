@@ -90,6 +90,9 @@ export const XpProvider = ({ children }) => {
     }
   }, [user, fireConfetti]);
 
+  // Track timeout refs for cleanup
+  const comboHideTimeoutRef = useRef(null);
+
   // Increment combo on correct answer
   const incrementCombo = useCallback(() => {
     setCombo(prev => {
@@ -104,8 +107,12 @@ export const XpProvider = ({ children }) => {
         if (newCombo === 2 || newCombo === 5 || newCombo === 10 || newCombo === 20) {
           fireConfetti("combo");
         }
-
-        setTimeout(() => setShowCombo(false), 3000);
+        
+        // Clear existing hide timeout
+        if (comboHideTimeoutRef.current) {
+          clearTimeout(comboHideTimeoutRef.current);
+        }
+        comboHideTimeoutRef.current = setTimeout(() => setShowCombo(false), 3000);
       }
 
       return newCombo;
@@ -121,6 +128,23 @@ export const XpProvider = ({ children }) => {
     }, 60000);
   }, [fireConfetti]);
 
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (comboTimeoutRef.current) {
+        clearTimeout(comboTimeoutRef.current);
+      }
+      if (comboHideTimeoutRef.current) {
+        clearTimeout(comboHideTimeoutRef.current);
+      }
+      if (changeTimeoutRef.current) {
+        clearTimeout(changeTimeoutRef.current);
+      }
+      milestoneTimeoutRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+      milestoneTimeoutRef.current = [];
+    };
+  }, []);
+
   // Reset combo on wrong answer
   const resetCombo = useCallback(() => {
     setCombo(0);
@@ -133,6 +157,9 @@ export const XpProvider = ({ children }) => {
   const getCurrentMultiplier = useCallback(() => {
     return getMultiplier(combo);
   }, [combo]);
+
+  // Track milestone timeouts for cleanup
+  const milestoneTimeoutRef = useRef([]);
 
   // Check for XP milestones and show achievement toasts
   const checkMilestones = useCallback((oldXP, newXP, oldLevel, newLevel) => {
@@ -165,22 +192,46 @@ export const XpProvider = ({ children }) => {
       shownMilestonesRef.current.add(`level_${newLevel}`);
 
       // Show level achievement toasts for milestone levels
-      if (newLevel === 5) setTimeout(() => achievements.level5(), 3500);
-      else if (newLevel === 10) setTimeout(() => achievements.level10(), 3500);
-      else if (newLevel === 25) setTimeout(() => achievements.level25(), 3500);
-
+      if (newLevel === 5) {
+        const timeoutId = setTimeout(() => achievements.level5(), 3500);
+        milestoneTimeoutRef.current.push(timeoutId);
+      }
+      else if (newLevel === 10) {
+        const timeoutId = setTimeout(() => achievements.level10(), 3500);
+        milestoneTimeoutRef.current.push(timeoutId);
+      }
+      else if (newLevel === 25) {
+        const timeoutId = setTimeout(() => achievements.level25(), 3500);
+        milestoneTimeoutRef.current.push(timeoutId);
+      }
+      
       setLevelUpData({
         newLevel,
         xpGained: newXP - oldXP,
         totalXP: newXP,
       });
-      setTimeout(() => setShowLevelUpModal(true), 300);
+      const modalTimeoutId = setTimeout(() => setShowLevelUpModal(true), 300);
+      milestoneTimeoutRef.current.push(modalTimeoutId);
     }
   }, [fireConfetti]);
 
+  // Cleanup milestone timeouts on unmount
+  useEffect(() => {
+    return () => {
+      milestoneTimeoutRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+      milestoneTimeoutRef.current = [];
+    };
+  }, []);
+
+  // Track change timeout for cleanup
+  const changeTimeoutRef = useRef(null);
+
   async function change() {
     setShow(true);
-    setTimeout(() => {
+    if (changeTimeoutRef.current) {
+      clearTimeout(changeTimeoutRef.current);
+    }
+    changeTimeoutRef.current = setTimeout(() => {
       setShow(false);
       setChanged(0);
     }, 2000);
