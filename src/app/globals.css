@@ -603,46 +603,37 @@ body {
 
 /* Night Mode - Blue Light Filter */
 .night-mode {
-  filter: sepia(15%) saturate(85%) brightness(95%);
+  filter: sepia(60%) hue-rotate(-12deg) saturate(90%) brightness(92%);
 }
-
-/* Exclude certain elements from night mode filter */
+/* Elements that MUST stay normal (logos, screenshots, etc.) */
 .night-mode .exclude-night-filter {
   filter: none;
 }
 
-/* Extra dark backgrounds for night mode */
+/* Do NOT override your theme backgrounds here.
+   Let :root / .dark tokens handle light vs dark. */
 .night-mode.dark body,
-.night-mode.dark .bg-background {
-  background-color: #080808 !important;
-}
-
-.night-mode.dark .bg-card {
-  background-color: #0c0c0c !important;
-}
-
+.night-mode.dark .bg-background,
+.night-mode.dark .bg-card,
 .night-mode.dark .bg-muted {
-  background-color: #141414 !important;
+  background-color: transparent !important;
 }
 
-/* Warmer text colors in night mode */
-.night-mode .text-muted-foreground {
-  color: #b0a090 !important;
-}
-
-/* Softer borders */
+/* Keep border colors from the design system */
 .night-mode .border {
-  border-color: #1a1a1a !important;
+  border-color: inherit !important;
 }
 
-/* Night mode indicator animation */
-@keyframes night-pulse {
+/* Slightly warmer muted text but still readable */
+.night-mode .text-muted-foreground {
+  color: color-mix(in oklch, currentColor 80%, oklch(0.78 0.06 70)) !important;
+}
 
-  0%,
-  100% {
+/* Night mode indicator animation (same name as before) */
+@keyframes night-pulse {
+  0%, 100% {
     opacity: 1;
   }
-
   50% {
     opacity: 0.7;
   }
