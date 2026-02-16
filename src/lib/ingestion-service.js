@@ -84,6 +84,7 @@ export async function ingestContent(fileBuffer, fileName, fileSize, userId) {
     const estimatedReadingTime = Math.ceil(totalWords / 200); // 200 wpm average
 
     // Step 6: Store course in Firestore
+    console.log("[DEBUG] Creating course for userId:", userId);
     const courseData = {
         userId,
         title: courseTitle,
@@ -108,6 +109,7 @@ export async function ingestContent(fileBuffer, fileName, fileSize, userId) {
 
     const courseRef = await db.collection("ingested_courses").add(courseData);
     const courseId = courseRef.id;
+    console.log("[DEBUG] Course created with ID:", courseId);
 
     // Step 7: Store chapters as subcollection
     const batch = db.batch();

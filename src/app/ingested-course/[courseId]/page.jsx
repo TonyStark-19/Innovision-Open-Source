@@ -25,6 +25,7 @@ import {
     ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BookmarkButton from "@/components/chapter_content/BookmarkButton";
 
 export default function IngestedCoursePage() {
     const params = useParams();
@@ -108,7 +109,16 @@ export default function IngestedCoursePage() {
                                 <Sparkles className="h-6 w-6 text-white" />
                             </div>
                             <div className="flex-1">
-                                <h1 className="text-3xl font-bold">{course.title}</h1>
+                                <div className="flex justify-between items-start">
+                                    <h1 className="text-3xl font-bold mb-1">{course.title}</h1>
+                                    {user && (
+                                        <BookmarkButton
+                                            courseId={params.courseId}
+                                            courseTitle={course.title}
+                                            courseType="ingested"
+                                        />
+                                    )}
+                                </div>
                                 <p className="text-muted-foreground mt-1">
                                     {course.description}
                                 </p>

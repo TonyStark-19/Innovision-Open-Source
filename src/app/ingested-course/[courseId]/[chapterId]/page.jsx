@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth";
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,12 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
+import BookmarkButton from "@/components/chapter_content/BookmarkButton";
 
 export default function IngestedChapterPage() {
     const params = useParams();
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, getToken } = useAuth();
 
     // Data States
     const [chapter, setChapter] = useState(null);
@@ -47,6 +48,46 @@ export default function IngestedChapterPage() {
     const [quizSubmitted, setQuizSubmitted] = useState(false);
 
     const [aiError, setAiError] = useState(null);
+    const [chapterCompleted, setChapterCompleted] = useState(false);
+    const [progressLoading, setProgressLoading] = useState(false);
+
+    // Safety check to prevent infinite saving loops or re-saving after manual toggle
+    const autoSaveAttempted = useRef(false);
+
+    const markChapterCompleted = useCallback(async (completed = true) => {
+        if (!user || !chapter) return;
+
+        // If we are performing an action (save or unsave), we consider the "auto-save" opportunity consumed
+        // so that scrolling doesn't interfere with user intent.
+        autoSaveAttempted.current = true;
+
+        setProgressLoading(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(
+                `/api/ingested-courses/${params.courseId}/progress`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        chapterNumber: chapter.chapterNumber,
+                        completed,
+                    }),
+                }
+            );
+
+            if (res.ok) {
+                setChapterCompleted(completed);
+            }
+        } catch (error) {
+            console.error("Failed to update progress:", error);
+        } finally {
+            setProgressLoading(false);
+        }
+    }, [user, chapter, params.courseId, getToken]);
 
     useEffect(() => {
         fetchChapter();
@@ -58,7 +99,8 @@ export default function IngestedChapterPage() {
             const scrollTop = window.scrollY;
             const docHeight = document.documentElement.scrollHeight - window.innerHeight;
             if (docHeight > 0) {
-                setReadProgress(Math.min(100, Math.round((scrollTop / docHeight) * 100)));
+                const progress = Math.min(100, Math.round((scrollTop / docHeight) * 100));
+                setReadProgress(progress);
             }
         };
 
@@ -66,7 +108,22 @@ export default function IngestedChapterPage() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    // Auto-complete when scrolled to bottom
+    useEffect(() => {
+        // Only auto-save if we haven't attempted yet and chapter is not already complete
+        if (readProgress >= 90 && !chapterCompleted && user && chapter && !autoSaveAttempted.current) {
+            markChapterCompleted(true);
+        }
+    }, [readProgress, chapterCompleted, user, chapter, markChapterCompleted]);
+
     const fetchChapter = async () => {
+        setLoading(true);
+        // Reset ALL states for the new chapter immediately to prevent race conditions
+        setChapter(null);
+        setChapterCompleted(false);
+        setReadProgress(0);
+        autoSaveAttempted.current = false;
+
         try {
             const res = await fetch(
                 `/api/ingested-courses/${params.courseId}/chapters/${params.chapterId}`
@@ -163,6 +220,38 @@ export default function IngestedChapterPage() {
         setQuizSubmitted(false);
     };
 
+    // Fetch progress on mount
+    useEffect(() => {
+        if (!user || !params.courseId) return;
+
+        const fetchProgress = async () => {
+            try {
+                const token = await getToken();
+                const res = await fetch(
+                    `/api/ingested-courses/${params.courseId}/progress`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+                if (res.ok) {
+                    const data = await res.json();
+                    if (chapter && data.completedChapters) {
+                        const isDone = data.completedChapters.some(num => Number(num) === Number(chapter.chapterNumber));
+                        setChapterCompleted(isDone);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch progress:", error);
+            }
+        };
+
+        if (chapter) {
+            fetchProgress();
+        }
+    }, [user, params.courseId, chapter]);
+
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -227,12 +316,25 @@ export default function IngestedChapterPage() {
                             {courseTitle}
                         </span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {estimatedReadTime} min read
-                        <span className="ml-2 px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-500 font-medium">
-                            {readProgress}%
-                        </span>
+                    <div className="flex items-center gap-2">
+                        {user && (
+                            <BookmarkButton
+                                courseId={params.courseId}
+                                chapterNumber={chapter?.chapterNumber}
+                                chapterTitle={chapter?.title}
+                                courseTitle={courseTitle}
+                                courseType="ingested"
+                                size="sm"
+                                chapterId={params.chapterId}
+                            />
+                        )}
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {estimatedReadTime} min read
+                            {chapterCompleted && (
+                                <CheckCircle2 className="h-4 w-4 text-green-500" title="Chapter completed" />
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -461,6 +563,37 @@ export default function IngestedChapterPage() {
 
                 </div>
 
+                {/* Chapter Completion */}
+                {user && (
+                    <div className="mt-8 pt-6 border-t border-border/50">
+                        <div className="flex items-center justify-center">
+                            <Button
+                                onClick={() => markChapterCompleted(!chapterCompleted)}
+                                disabled={progressLoading}
+                                variant={chapterCompleted ? "outline" : "default"}
+                                className={chapterCompleted ? "gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-900/10" : "bg-green-600 hover:bg-green-700 text-white gap-2"}
+                            >
+                                {progressLoading ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        {chapterCompleted ? "Marking as Incomplete..." : "Saving..."}
+                                    </>
+                                ) : chapterCompleted ? (
+                                    <>
+                                        <XCircle className="h-4 w-4" />
+                                        Mark as Incomplete
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        Mark Chapter as Complete
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Chapter Navigation */}
                 <div className="mt-12 pt-6 border-t border-border/50">
                     <div className="flex justify-between items-center">
@@ -480,6 +613,9 @@ export default function IngestedChapterPage() {
 
                         <span className="text-sm text-muted-foreground">
                             Chapter {chapter.chapterNumber}
+                            {chapterCompleted && (
+                                <span className="ml-2 text-green-500">✓ Completed</span>
+                            )}
                         </span>
 
                         <Button

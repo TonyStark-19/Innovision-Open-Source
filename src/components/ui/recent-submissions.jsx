@@ -19,7 +19,13 @@ export function RecentCourses({ courses, loading }) {
                 >
                     <div className="flex items-center justify-between">
                         <Link
-                            href={`/roadmap/${course.id}`}
+                            href={
+                                course.courseType === "ingested"
+                                    ? `/ingested-course/${course.id}`
+                                    : course.courseType === "youtube"
+                                        ? `/youtube-course/${course.id}`
+                                        : `/roadmap/${course.id}`
+                            }
                             className="font-medium hover:underline"
                         >
                             {course.courseTitle}

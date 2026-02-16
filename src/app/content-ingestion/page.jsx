@@ -71,12 +71,17 @@ export default function ContentIngestion() {
     }
     try {
       const token = await getToken?.();
+      console.log("[DEBUG] Fetching courses for user:", user?.email || user?.uid);
       const res = await fetch("/api/ingested-courses", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         const data = await res.json();
+        console.log("[DEBUG] Fetched courses count:", data.courses?.length || 0);
+        console.log("[DEBUG] Courses:", data.courses);
         setPastCourses(data.courses || []);
+      } else {
+        console.error("[DEBUG] Failed to fetch courses:", res.status, await res.text());
       }
     } catch (error) {
       console.error("Error fetching past courses:", error);
@@ -142,7 +147,30 @@ export default function ContentIngestion() {
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) fileInput.value = "";
         toast.success(data.message || "Course created successfully!");
-        fetchPastCourses(); // Refresh list
+
+        // Optimistically add the new course to the list immediately
+        const newCourse = {
+          id: data.courseId,
+          title: data.title,
+          description: data.description,
+          chapterCount: data.chapterCount,
+          totalWords: data.totalWords,
+          estimatedReadingTime: data.estimatedReadingTime,
+          source: {
+            fileName: file.name,
+            fileType: file.name.split('.').pop().toLowerCase(),
+          },
+          status: "processed",
+          createdAt: new Date(), // Use current time for optimistic update
+        };
+
+        // Add to the beginning of the list (most recent first)
+        setPastCourses(prev => [newCourse, ...prev]);
+
+        // Fetch from server after a small delay to ensure Firestore consistency
+        setTimeout(() => {
+          fetchPastCourses();
+        }, 500);
       } else {
         toast.error(data.error || "Failed to ingest content");
       }

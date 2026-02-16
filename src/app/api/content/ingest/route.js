@@ -13,12 +13,15 @@ export async function POST(request) {
         const { getAuth } = await import("firebase-admin/auth");
         const token = authHeader.replace("Bearer ", "");
         const decoded = await getAuth().verifyIdToken(token);
-        userId = decoded.uid;
+        // Use email consistently (matches how other parts of the app identify users)
+        userId = decoded.email || decoded.uid;
       }
     } catch (authError) {
-      console.log("Auth verification failed, using anonymous:", authError.message);
+      console.log("[DEBUG] Auth verification failed, using anonymous:", authError.message);
       // Continue with anonymous userId — don't block the pipeline
     }
+
+    console.log("[DEBUG] Content ingestion userId:", userId);
 
     const formData = await request.formData();
     const file = formData.get("file");

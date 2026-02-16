@@ -27,7 +27,8 @@ export async function GET(request) {
                     sessionCookie.value,
                     true
                 );
-                userId = decoded.uid;
+                // Use email consistently (matches how other parts of the app identify users)
+                userId = decoded.email || decoded.uid;
             } catch {
                 // try token
             }
@@ -40,7 +41,8 @@ export async function GET(request) {
                     const { getAuth } = await import("firebase-admin/auth");
                     const token = authHeader.replace("Bearer ", "");
                     const decoded = await getAuth().verifyIdToken(token);
-                    userId = decoded.uid;
+                    // Use email consistently
+                    userId = decoded.email || decoded.uid;
                 } catch {
                     // auth failed
                 }
@@ -54,11 +56,22 @@ export async function GET(request) {
             );
         }
 
-        const snapshot = await db
-            .collection("ingested_courses")
-            .where("userId", "==", userId)
-            .orderBy("createdAt", "desc")
-            .get();
+        let snapshot;
+        try {
+            // Try with orderBy first (requires composite index)
+            snapshot = await db
+                .collection("ingested_courses")
+                .where("userId", "==", userId)
+                .orderBy("createdAt", "desc")
+                .get();
+        } catch (queryError) {
+            console.log("OrderBy query failed, fetching without orderBy:", queryError.message);
+            // If orderBy fails (missing index), fetch without it
+            snapshot = await db
+                .collection("ingested_courses")
+                .where("userId", "==", userId)
+                .get();
+        }
 
         const courses = snapshot.docs.map((doc) => {
             const data = doc.data();
@@ -78,11 +91,18 @@ export async function GET(request) {
             };
         });
 
+        // Sort in memory by createdAt (newest first)
+        courses.sort((a, b) => {
+            if (!a.createdAt) return 1;
+            if (!b.createdAt) return -1;
+            return b.createdAt - a.createdAt;
+        });
+
         return NextResponse.json({ courses });
     } catch (error) {
         console.error("Error fetching ingested courses:", error);
         return NextResponse.json(
-            { error: "Failed to fetch courses" },
+            { error: "Failed to fetch courses", details: error.message },
             { status: 500 }
         );
     }
