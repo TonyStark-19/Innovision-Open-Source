@@ -103,29 +103,18 @@ export default function page() {
                             {roadmaps
                                 .filter(r => r.process === "completed")
                                 .map((roadmap, index) => (
-                                    <ScrollReveal key={roadmap.id} delay={index * 80}>
+                                    <ScrollReveal>
                                         <HoverCard>
-                                            <Card className="w-[320px] h-[200px] relative bg-card/50 backdrop-blur-sm border-border/50 flex flex-col">
-                                                <CardHeader className="pb-2">
-                                                    <CardTitle className="line-clamp-2">
-                                                        {roadmap?.courseTitle?.split(":")[0] || ""}
-                                                    </CardTitle>
-                                                    <div className="absolute z-10 top-0 right-0">
-                                                        <DeleteRoadmap
-                                                            id={roadmap.id}
-                                                            onDelete={() => {
-                                                                fetchRoadmaps();
-                                                                hideLoader();
-                                                            }}
-                                                        />
+                                            <Card className="w-[320px] h-[200px] relative flex items-center justify-center border-2 border-dashed border-border/50 bg-card/30 backdrop-blur-sm hover:border-blue-500/50 transition-colors">
+                                                <div className="flex flex-col items-center text-muted-foreground">
+                                                    <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-3">
+                                                        <Plus strokeWidth={1.5} className="w-8 h-8 text-blue-500" />
                                                     </div>
-                                                </CardHeader>
-
-                                                <CardContent className="text-muted-foreground text-sm line-clamp-3 flex-1">
-                                                    {roadmap.courseDescription}
-                                                </CardContent>
-
-                                                <Link href={`/roadmap/${roadmap.id}`}>
+                                                    <p className="text-lg text-center font-medium">
+                                                        Create your course
+                                                    </p>
+                                                </div>
+                                                <Link href={`/generate`} scroll={false}>
                                                     <span className="absolute inset-0"></span>
                                                 </Link>
                                             </Card>
