@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BookmarkButton from "@/components/chapter_content/BookmarkButton";
+import ChatBot from "@/components/chat/ChatBot";
 
 export default function IngestedCoursePage() {
     const params = useParams();
@@ -218,6 +219,11 @@ export default function IngestedCoursePage() {
                     </ScrollReveal>
                 )}
             </div>
+
+            <ChatBot
+                courseId={params.courseId}
+                courseTitle={course?.title}
+            />
         </div>
     );
 }

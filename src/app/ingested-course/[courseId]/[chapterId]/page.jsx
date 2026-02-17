@@ -21,6 +21,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import BookmarkButton from "@/components/chapter_content/BookmarkButton";
+import ChatBot from "@/components/chat/ChatBot";
 
 export default function IngestedChapterPage() {
     const params = useParams();
@@ -633,6 +634,12 @@ export default function IngestedChapterPage() {
                     </div>
                 </div>
             </div>
+
+            <ChatBot
+                courseId={params.courseId}
+                chapterId={params.chapterId}
+                courseTitle={courseTitle}
+            />
 
             {/* Scroll to Top Button */}
             {readProgress > 20 && (
