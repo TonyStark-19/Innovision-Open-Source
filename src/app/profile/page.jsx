@@ -127,7 +127,7 @@ export default function ProfilePage() {
       <PageBackground variant="profile" />
       <GridPattern opacity={0.02} />
 
-      <div className="max-w-7xl mx-auto p-6 relative z-10">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 relative z-10">
         {/* Trial Banner */}
         <TrialBanner onStatusChange={handleStatusChange} />
 
@@ -151,32 +151,32 @@ export default function ProfilePage() {
           {/* Main Content - All original tabs */}
           <div className="space-y-6">
             <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-7">
-                <TabsTrigger value="overview">
+              <TabsList className="flex flex-wrap h-auto w-full gap-1 p-1 bg-muted/50 justify-start">
+                <TabsTrigger value="overview" className="flex-1 min-w-[100px] sm:flex-none">
                   <Trophy className="h-4 w-4 mr-2" />
                   Overview
                 </TabsTrigger>
-                <TabsTrigger value="progress">
+                <TabsTrigger value="progress" className="flex-1 min-w-[100px] sm:flex-none">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Progress
                 </TabsTrigger>
-                <TabsTrigger value="courses">
+                <TabsTrigger value="courses" className="flex-1 min-w-[100px] sm:flex-none">
                   <BookOpen className="h-4 w-4 mr-2" />
                   Courses
                 </TabsTrigger>
-                <TabsTrigger value="activity">
+                <TabsTrigger value="activity" className="flex-1 min-w-[100px] sm:flex-none">
                   <Calendar className="h-4 w-4 mr-2" />
                   Activity
                 </TabsTrigger>
-                <TabsTrigger value="compete">
+                <TabsTrigger value="compete" className="flex-1 min-w-[100px] sm:flex-none">
                   <Trophy className="h-4 w-4 mr-2" />
                   Compete
                 </TabsTrigger>
-                <TabsTrigger value="research">
+                <TabsTrigger value="research" className="flex-1 min-w-[100px] sm:flex-none">
                   <Database className="h-4 w-4 mr-2" />
                   Research
                 </TabsTrigger>
-                <TabsTrigger value="settings">
+                <TabsTrigger value="settings" className="flex-1 min-w-[100px] sm:flex-none">
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </TabsTrigger>

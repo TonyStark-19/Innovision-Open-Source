@@ -236,16 +236,16 @@ export default function Leaderboard({ currentUserId }) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="weekly">
-          <TabsList className="grid w-full grid-cols-3 h-9">
-            <TabsTrigger value="daily" className="text-xs">
+          <TabsList className="flex flex-wrap h-auto w-full gap-1 p-1 bg-muted/50 backdrop-blur-sm">
+            <TabsTrigger value="daily" className="flex-1 min-w-[70px] text-xs py-1.5 data-[state=active]:bg-background">
               <Calendar className="h-3 w-3 mr-1" />
               Today
             </TabsTrigger>
-            <TabsTrigger value="weekly" className="text-xs">
+            <TabsTrigger value="weekly" className="flex-1 min-w-[70px] text-xs py-1.5 data-[state=active]:bg-background">
               <TrendingUp className="h-3 w-3 mr-1" />
               Week
             </TabsTrigger>
-            <TabsTrigger value="allTime" className="text-xs">
+            <TabsTrigger value="allTime" className="flex-1 min-w-[70px] text-xs py-1.5 data-[state=active]:bg-background">
               <Users className="h-3 w-3 mr-1" />
               All Time
             </TabsTrigger>

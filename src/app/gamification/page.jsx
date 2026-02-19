@@ -27,7 +27,7 @@ export default function GamificationPage() {
       <PageBackground />
       <GridPattern opacity={0.02} />
 
-      <div className="max-w-400 mx-auto relative z-10">
+      <div className="max-w-4xl mx-auto relative z-10">
         <PageHeader
           title="Your Progress"
           description="Track achievements, compete, and level up!"
@@ -38,20 +38,20 @@ export default function GamificationPage() {
 
         <ScrollReveal delay={100}>
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4 bg-muted/50 backdrop-blur-sm">
-              <TabsTrigger value="overview" className="text-xs data-[state=active]:bg-background">
+            <TabsList className="flex flex-wrap h-auto w-full gap-1 p-1 bg-muted/50 backdrop-blur-sm">
+              <TabsTrigger value="overview" className="flex-1 min-w-[80px] text-xs data-[state=active]:bg-background">
                 <Trophy className="h-3 w-3 mr-1" />
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="text-xs data-[state=active]:bg-background">
+              <TabsTrigger value="analytics" className="flex-1 min-w-[80px] text-xs data-[state=active]:bg-background">
                 <TrendingUp className="h-3 w-3 mr-1" />
                 Analytics
               </TabsTrigger>
-              <TabsTrigger value="challenges" className="text-xs data-[state=active]:bg-background">
+              <TabsTrigger value="challenges" className="flex-1 min-w-[80px] text-xs data-[state=active]:bg-background">
                 <Target className="h-3 w-3 mr-1" />
                 Challenges
               </TabsTrigger>
-              <TabsTrigger value="skills" className="text-xs data-[state=active]:bg-background">
+              <TabsTrigger value="skills" className="flex-1 min-w-[80px] text-xs data-[state=active]:bg-background">
                 <Brain className="h-3 w-3 mr-1" />
                 Skills
               </TabsTrigger>

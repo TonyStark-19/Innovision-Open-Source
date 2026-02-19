@@ -70,7 +70,7 @@ export default function GamificationDashboard({ userId }) {
   return (
     <div className="space-y-4">
       {/* Stats Grid */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Level Card */}
         <Card className="col-span-1">
           <CardHeader className="pb-2">
@@ -155,7 +155,7 @@ export default function GamificationDashboard({ userId }) {
           <CardTitle className="text-sm">Badge Collection</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
             {BADGES.map((badge) => {
               const earned = stats.badges?.includes(badge.id);
               const IconComponent = Icons[badge.icon];

@@ -122,7 +122,7 @@ export default function StatsCard({ userId }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
             ))}
@@ -142,7 +142,7 @@ export default function StatsCard({ userId }) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatItem
             icon={Clock}
             label="Hours Studied"
@@ -172,7 +172,7 @@ export default function StatsCard({ userId }) {
         </div>
 
         {/* Secondary Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="text-center p-3 bg-muted rounded-lg">
             <p className="text-2xl font-bold">{stats.level}</p>
             <p className="text-xs text-muted-foreground">Level</p>
@@ -275,16 +275,16 @@ function StatItem({ icon: Icon, label, value, suffix = "", color }) {
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-      <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
+    <div className="flex flex-row sm:flex-row items-center gap-3 p-3 rounded-lg bg-muted/50">
+      <div className={`p-2 rounded-lg shrink-0 ${colorClasses[color]}`}>
         <Icon className="h-5 w-5" />
       </div>
-      <div>
-        <p className="text-xl font-bold">
+      <div className="min-w-0">
+        <p className="text-lg sm:text-xl font-bold truncate">
           {value}
-          {suffix && <span className="text-sm font-normal text-muted-foreground ml-1">{suffix}</span>}
+          {suffix && <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-1">{suffix}</span>}
         </p>
-        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{label}</p>
       </div>
     </div>
   );
