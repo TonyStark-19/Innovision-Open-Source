@@ -41,3 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 key.json.env.local
+
+# Local documentation files (not to be pushed)
+ISSUES_ROADMAP.md
+FRESH_ISSUES.md
+ASSIGNED_ISSUES_API_BREAKDOWN.md
+ISSUE_*_SUMMARY.md
+NEW_ISSUES_TO_CREATE.md
+MY_NEW_ISSUES.md
+CUSTOM_ISSUES.md
