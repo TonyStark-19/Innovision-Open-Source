@@ -23,14 +23,14 @@ export default function CertificatesPage() {
   const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
-    if (user?.uid) {
+    if (user?.email) {
       fetchCertificates();
     }
   }, [user]);
 
   const fetchCertificates = async () => {
     try {
-      const response = await fetch(`/api/certificates/${user.uid}`);
+      const response = await fetch(`/api/certificates/${encodeURIComponent(user.email)}`);
       const data = await response.json();
 
       if (data.success) {
@@ -51,7 +51,7 @@ export default function CertificatesPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user.uid,
+          userId: user.email,
           courseId: "test-course-id", // You'll need a real course ID
         }),
       });
