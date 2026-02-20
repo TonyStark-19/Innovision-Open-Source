@@ -24,6 +24,7 @@ export async function GET() {
         difficulty: doc.data().difficulty,
         chapters: doc.data().chapters || [],
         chapterCount: doc.data().chapters?.length || 0,
+        archived: doc.data().archived || false, // Include archived status
       }))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 

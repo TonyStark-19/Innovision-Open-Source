@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/contexts/auth";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
@@ -9,6 +9,23 @@ import Image from "next/image";
 export default function SignIn() {
   const { user, googleSignIn, githubSignIn } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  // Generate dots only on client side to avoid hydration mismatch
+  const dots = useMemo(() => {
+    if (!mounted) return [];
+    return [...Array(100)].map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 3,
+      duration: 2 + Math.random() * 2,
+    }));
+  }, [mounted]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -20,15 +37,15 @@ export default function SignIn() {
     <div className="min-h-[calc(100vh-64px)] relative bg-background overflow-hidden flex items-center justify-center">
       {/* Animated dots background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {[...Array(100)].map((_, i) => (
+        {dots.map((dot) => (
           <div
-            key={i}
+            key={dot.id}
             className="dot absolute w-1 h-1 bg-foreground/20 rounded-full animate-pulse"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`,
+              left: `${dot.left}%`,
+              top: `${dot.top}%`,
+              animationDelay: `${dot.delay}s`,
+              animationDuration: `${dot.duration}s`,
             }}
           />
         ))}

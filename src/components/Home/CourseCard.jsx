@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, BookOpen, Trash2, CheckCircle2 } from "lucide-react";
+import { Clock, BookOpen, CheckCircle2 } from "lucide-react";
 import { calculateEstimatedTime } from "@/lib/time-utils";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import DeleteRoadmap from "./DeleteRoadmap";
+import ArchiveCourse from "./ArchiveCourse";
+import DuplicateCourse from "./DuplicateCourse";
 
-const CourseCard = ({ course, onDelete }) => {
+const CourseCard = ({ course, onDelete, isSelectable, isSelected, onSelect }) => {
   const { id, courseTitle, courseDescription, chapterCount, difficulty, chapters } = course;
 
   // Calculate progress percentage
@@ -59,19 +62,48 @@ const CourseCard = ({ course, onDelete }) => {
   };
 
   return (
-    <Card className="w-[320px] h-[280px] relative group hover:shadow-lg transition-all duration-300 hover:border-blue-500/50 bg-card/50 backdrop-blur-sm">
-      <Link href={`/roadmap/${id}`} className="absolute inset-0 z-0" />
+    <Card className={`w-[320px] h-[280px] relative group hover:shadow-lg transition-all duration-300 ${
+      isSelected ? 'border-blue-500 ring-2 ring-blue-500/20' : 'hover:border-blue-500/50'
+    } bg-card/50 backdrop-blur-sm`}>
+      {!isSelectable && <Link href={`/roadmap/${id}`} className="absolute inset-0 z-0" />}
+      
+      {/* Selection Checkbox */}
+      {isSelectable && (
+        <div className="absolute top-3 left-3 z-20">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={(checked) => onSelect(id, checked)}
+            className="h-5 w-5 border-2 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+          />
+        </div>
+      )}
       
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg line-clamp-2 leading-tight">
-            {courseTitle}
+          <CardTitle className={`text-lg line-clamp-2 leading-tight ${isSelectable ? 'pl-8' : ''}`}>
+            {isSelectable && !isSelected ? (
+              <span onClick={() => onSelect(id, true)} className="cursor-pointer">
+                {courseTitle}
+              </span>
+            ) : isSelectable ? (
+              courseTitle
+            ) : (
+              courseTitle
+            )}
           </CardTitle>
-          <DeleteRoadmap
-            id={id}
-            onDelete={onDelete}
-            className="relative z-10 opacity-0 group-hover:opacity-100 transition-opacity"
-          />
+          {!isSelectable && (
+            <div className="flex items-center gap-1 relative z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+              <DuplicateCourse
+                id={id}
+                courseTitle={courseTitle}
+                onDuplicate={onDelete}
+              />
+              <DeleteRoadmap
+                id={id}
+                onDelete={onDelete}
+              />
+            </div>
+          )}
         </div>
         <CardDescription className="line-clamp-2 text-sm">
           {courseDescription}

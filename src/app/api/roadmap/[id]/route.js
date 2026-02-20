@@ -1,55 +1,50 @@
+import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { getServerSession } from "@/lib/auth-server";
-import { NextResponse } from "next/server";
 
-export async function GET(req, { params }) {
+export async function GET(request, { params }) {
   try {
     const session = await getServerSession();
-    const { id } = await params;
-    const docRef = adminDb.collection("users").doc(session.user.email).collection("roadmaps").doc(id);
-    const docSnap = await docRef.get();
-
-    if (!docSnap.exists) {
-      return NextResponse.json({ process: "Roadmap not found" }, { status: 404 });
+    if (!session) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.json(docSnap.data());
-  } catch (error) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
-  }
-}
 
-export async function DELETE(req, { params }) {
-  try {
-    const session = await getServerSession();
+    const { id } = params;
 
-    const { id } = await params;
-    const docRef = adminDb.collection("users").doc(session.user.email).collection("roadmaps").doc(id);
-    const chaptersRef = adminDb
+    if (!id) {
+      return NextResponse.json(
+        { error: "Course ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Get course data
+    const courseRef = adminDb
       .collection("users")
       .doc(session.user.email)
       .collection("roadmaps")
-      .doc(id)
-      .collection("chapters");
+      .doc(id);
 
-    const chapterSnapshot = await chaptersRef.get();
-    const deletePromises = chapterSnapshot.docs.map(async (chapterdoc) => {
-      const tasksRef = adminDb
-        .collection("users")
-        .doc(session.user.email)
-        .collection("roadmaps")
-        .doc(id)
-        .collection("chapters")
-        .doc(chapterdoc.id)
-        .collection("tasks")
-        .doc("task");
-      await tasksRef.delete();
-      await chapterdoc.ref.delete();
+    const courseSnap = await courseRef.get();
+
+    if (!courseSnap.exists) {
+      return NextResponse.json(
+        { error: "Course not found" },
+        { status: 404 }
+      );
+    }
+
+    const courseData = courseSnap.data();
+
+    return NextResponse.json({
+      id: courseSnap.id,
+      ...courseData,
     });
-    await Promise.all(deletePromises);
-    await docRef.delete();
-
-    return NextResponse.json({ message: "Roadmap deleted successfully" });
   } catch (error) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    console.error("Error fetching course:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch course" },
+      { status: 500 }
+    );
   }
 }

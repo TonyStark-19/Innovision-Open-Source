@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, TrendingUp, BookOpen, Calendar, Settings, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trophy, TrendingUp, BookOpen, Calendar, Settings, Award, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/dashboard/Sidebar";
@@ -28,6 +28,8 @@ import PremiumDialog from "@/components/PremiumDialog";
 import LockedFeature from "@/components/LockedFeature";
 import { useRouter } from "next/navigation";
 import { PageBackground, GridPattern, ScrollReveal } from "@/components/ui/PageWrapper";
+import ChartSkeleton from "@/components/skeletons/ChartSkeleton";
+import CourseListSkeleton from "@/components/skeletons/CourseListSkeleton";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -46,7 +48,7 @@ export default function ProfilePage() {
   const tabsListRef = useRef(null);
   const [activeTab, setActiveTab] = useState("overview");
 
-  const tabOrder = ["overview", "progress", "courses", "activity", "compete", "research", "settings"];
+  const tabOrder = ["overview", "progress", "courses", "activity", "compete", "certificates", "research", "settings"];
 
   const navigateTab = (direction) => {
     const currentIndex = tabOrder.indexOf(activeTab);
@@ -227,6 +229,10 @@ export default function ProfilePage() {
                         <Trophy className="h-4 w-4 mr-2" />
                         Compete
                       </TabsTrigger>
+                      <TabsTrigger value="certificates" className="flex-none px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                        <Award className="h-4 w-4 mr-2" />
+                        Certificates
+                      </TabsTrigger>
                       <TabsTrigger value="research" className="flex-none px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
                         <Database className="h-4 w-4 mr-2" />
                         Research
@@ -292,17 +298,26 @@ export default function ProfilePage() {
               {/* Progress Tab - XP Chart */}
               <TabsContent value="progress" className="space-y-4">
                 <LockedFeature featureName="Progress Analytics" hasAccess={hasAccess} showPreview={true}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>XP Earned</CardTitle>
-                      <CardDescription>Your XP earned data over the last year</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ProblemSolvedChart questions={Object.values(userData?.xptrack || {})} />
-                    </CardContent>
-                  </Card>
+                  {loading ? (
+                    <>
+                      <ChartSkeleton title="XP Earned" description="Your XP earned data over the last year" />
+                      <ChartSkeleton title="XP History" />
+                    </>
+                  ) : (
+                    <>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>XP Earned</CardTitle>
+                          <CardDescription>Your XP earned data over the last year</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ProblemSolvedChart questions={Object.values(userData?.xptrack || {})} />
+                        </CardContent>
+                      </Card>
 
-                  {user?.email && <XPChart userId={user.email} />}
+                      {user?.email && <XPChart userId={user.email} />}
+                    </>
+                  )}
                 </LockedFeature>
               </TabsContent>
 
@@ -316,7 +331,11 @@ export default function ProfilePage() {
                     <CardTitle>Recent Courses</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <RecentCourses courses={recentRoadmaps} loading={loading} />
+                    {loading ? (
+                      <CourseListSkeleton count={4} />
+                    ) : (
+                      <RecentCourses courses={recentRoadmaps} loading={loading} />
+                    )}
                   </CardContent>
                 </Card>
 
@@ -325,7 +344,11 @@ export default function ProfilePage() {
                     <CardTitle>Completed Courses</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <RecentCourses courses={completedRoadmaps} loading={loading} />
+                    {loading ? (
+                      <CourseListSkeleton count={3} />
+                    ) : (
+                      <RecentCourses courses={completedRoadmaps} loading={loading} />
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -454,6 +477,26 @@ export default function ProfilePage() {
                     </CardContent>
                   </Card>
                 </LockedFeature>
+              </TabsContent>
+
+              {/* Certificates Tab */}
+              <TabsContent value="certificates" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="h-5 w-5 text-yellow-500" />
+                      My Certificates
+                    </CardTitle>
+                    <CardDescription>
+                      View and download your course completion certificates
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button onClick={() => router.push("/profile/certificates")} className="w-full">
+                      View All Certificates
+                    </Button>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               {/* Settings Tab */}

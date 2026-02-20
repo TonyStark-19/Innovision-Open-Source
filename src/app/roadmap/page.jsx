@@ -1,7 +1,7 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, Sparkles, Search, X, Filter } from "lucide-react";
+import { Plus, BookOpen, Sparkles, Search, X, Filter, Trash2, Archive, ArchiveRestore, CheckSquare } from "lucide-react";
 import CourseCard from "@/components/Home/CourseCard";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -10,6 +10,18 @@ import { PageBackground, GridPattern, PageHeader, ScrollReveal, HoverCard } from
 import ChatBot from "@/components/chat/ChatBot";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export default function page() {
     const [error, setError] = useState(null);
@@ -19,15 +31,26 @@ export default function page() {
     // Filter states
     const [searchQuery, setSearchQuery] = useState("");
     const [difficultyFilter, setDifficultyFilter] = useState("all");
+    const [archiveFilter, setArchiveFilter] = useState("active"); // active, archived, all
     const [sortBy, setSortBy] = useState("newest");
+    const [archiveFilter, setArchiveFilter] = useState("active");
+
+    // Bulk selection states
+    const [selectionMode, setSelectionMode] = useState(false);
+    const [selectedCourses, setSelectedCourses] = useState([]);
+    const [bulkActionLoading, setBulkActionLoading] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+    const [bulkAction, setBulkAction] = useState(null);
 
     // Load filter preferences from localStorage
     useEffect(() => {
         const savedFilters = localStorage.getItem("courseFilters");
         if (savedFilters) {
-            const { search, difficulty, sort } = JSON.parse(savedFilters);
+            const { search, difficulty, archive, sort } = JSON.parse(savedFilters);
             setSearchQuery(search || "");
             setDifficultyFilter(difficulty || "all");
+            setArchiveFilter(archive || "active");
             setSortBy(sort || "newest");
         }
     }, []);
@@ -39,10 +62,11 @@ export default function page() {
             JSON.stringify({
                 search: searchQuery,
                 difficulty: difficultyFilter,
+                archive: archiveFilter,
                 sort: sortBy,
             })
         );
-    }, [searchQuery, difficultyFilter, sortBy]);
+    }, [searchQuery, difficultyFilter, archiveFilter, sortBy]);
 
     async function fetchRoadmaps() {
         setLoading(true);
@@ -71,9 +95,22 @@ export default function page() {
 
     const completedCourses = roadmaps.filter(r => r.process === "completed");
 
+    // Filter by archive status
+    const statusFilteredCourses = completedCourses.filter((course) => {
+        if (archiveFilter === "active") return !course.archived;
+        if (archiveFilter === "archived") return course.archived;
+        return true; // "all"
+    });
+
     // Filter and sort courses
-    const filteredCourses = completedCourses
+    const filteredCourses = statusFilteredCourses
         .filter((course) => {
+            // Archive filter - treat undefined/null as not archived
+            const isArchived = course.archived === true;
+            if (archiveFilter === "active" && isArchived) return false;
+            if (archiveFilter === "archived" && !isArchived) return false;
+            // "all" shows both
+
             // Search filter
             const matchesSearch = course.courseTitle
                 .toLowerCase()
@@ -101,11 +138,89 @@ export default function page() {
     const clearFilters = () => {
         setSearchQuery("");
         setDifficultyFilter("all");
+        setArchiveFilter("active");
         setSortBy("newest");
     };
 
     // Check if any filters are active
-    const hasActiveFilters = searchQuery !== "" || difficultyFilter !== "all" || sortBy !== "newest";
+    const hasActiveFilters = searchQuery !== "" || difficultyFilter !== "all" || archiveFilter !== "active" || sortBy !== "newest";
+
+    // Bulk selection handlers
+    const toggleSelectionMode = () => {
+        setSelectionMode(!selectionMode);
+        setSelectedCourses([]);
+    };
+
+    const handleSelectCourse = (courseId, checked) => {
+        if (checked) {
+            setSelectedCourses([...selectedCourses, courseId]);
+        } else {
+            setSelectedCourses(selectedCourses.filter(id => id !== courseId));
+        }
+    };
+
+    const handleSelectAll = (checked) => {
+        if (checked) {
+            setSelectedCourses(filteredCourses.map(c => c.id));
+        } else {
+            setSelectedCourses([]);
+        }
+    };
+
+    const handleBulkAction = async (action) => {
+        if (selectedCourses.length === 0) {
+            toast.error("No courses selected");
+            return;
+        }
+
+        setBulkActionLoading(true);
+        try {
+            const response = await fetch("/api/roadmap/bulk", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    courseIds: selectedCourses,
+                    action: action,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success(
+                    `Successfully ${action}d ${data.processed} course${data.processed > 1 ? 's' : ''}${
+                        data.failed > 0 ? `, ${data.failed} failed` : ''
+                    }`
+                );
+                setSelectedCourses([]);
+                setSelectionMode(false);
+                fetchRoadmaps();
+            } else {
+                toast.error(data.error || `Failed to ${action} courses`);
+            }
+        } catch (error) {
+            console.error(`Bulk ${action} error:`, error);
+            toast.error(`Failed to ${action} courses`);
+        } finally {
+            setBulkActionLoading(false);
+            setShowDeleteDialog(false);
+            setShowArchiveDialog(false);
+        }
+    };
+
+    const confirmBulkDelete = () => {
+        setBulkAction("delete");
+        setShowDeleteDialog(true);
+    };
+
+    const confirmBulkArchive = () => {
+        const hasArchivedCourses = selectedCourses.some(id => {
+            const course = filteredCourses.find(c => c.id === id);
+            return course?.archived;
+        });
+        setBulkAction(hasArchivedCourses ? "unarchive" : "archive");
+        setShowArchiveDialog(true);
+    };
 
     return (
         <div className="min-h-screen bg-background relative">
@@ -124,6 +239,80 @@ export default function page() {
                 {/* Search and Filter Section */}
                 {!loading && !error && completedCourses.length > 0 && (
                     <div className="w-full max-w-4xl space-y-4">
+                        {/* Bulk Actions Toolbar */}
+                        {selectionMode && (
+                            <div className="flex items-center justify-between p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg backdrop-blur-sm">
+                                <div className="flex items-center gap-4">
+                                    <Checkbox
+                                        checked={selectedCourses.length === filteredCourses.length && filteredCourses.length > 0}
+                                        onCheckedChange={handleSelectAll}
+                                        className="h-5 w-5"
+                                    />
+                                    <span className="text-sm font-medium">
+                                        {selectedCourses.length} of {filteredCourses.length} selected
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {selectedCourses.length > 0 && (
+                                        <>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={confirmBulkArchive}
+                                                disabled={bulkActionLoading}
+                                                className="gap-2"
+                                            >
+                                                {archiveFilter === "archived" ? (
+                                                    <>
+                                                        <ArchiveRestore className="h-4 w-4" />
+                                                        Unarchive
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Archive className="h-4 w-4" />
+                                                        Archive
+                                                    </>
+                                                )}
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={confirmBulkDelete}
+                                                disabled={bulkActionLoading}
+                                                className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                Delete
+                                            </Button>
+                                        </>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={toggleSelectionMode}
+                                        disabled={bulkActionLoading}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Selection Mode Toggle */}
+                        {!selectionMode && (
+                            <div className="flex justify-end">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={toggleSelectionMode}
+                                    className="gap-2"
+                                >
+                                    <CheckSquare className="h-4 w-4" />
+                                    Select Courses
+                                </Button>
+                            </div>
+                        )}
+
                         {/* Search Bar */}
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -151,6 +340,18 @@ export default function page() {
                                 <span className="font-medium">Filters:</span>
                             </div>
 
+                            {/* Archive Status Filter */}
+                            <Select value={archiveFilter} onValueChange={setArchiveFilter}>
+                                <SelectTrigger className="w-[140px] h-9 bg-card/50 backdrop-blur-sm border-border/50">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="archived">Archived</SelectItem>
+                                    <SelectItem value="all">All Courses</SelectItem>
+                                </SelectContent>
+                            </Select>
+
                             {/* Difficulty Filter */}
                             <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
                                 <SelectTrigger className="w-[160px] h-9 bg-card/50 backdrop-blur-sm border-border/50">
@@ -161,6 +362,18 @@ export default function page() {
                                     <SelectItem value="fast">Fast-paced</SelectItem>
                                     <SelectItem value="balanced">Balanced</SelectItem>
                                     <SelectItem value="in-depth">In-depth</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* Archive Filter */}
+                            <Select value={archiveFilter} onValueChange={setArchiveFilter}>
+                                <SelectTrigger className="w-[140px] h-9 bg-card/50 backdrop-blur-sm border-border/50">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="archived">Archived</SelectItem>
+                                    <SelectItem value="all">All Courses</SelectItem>
                                 </SelectContent>
                             </Select>
 
@@ -268,6 +481,9 @@ export default function page() {
                                         <CourseCard
                                             course={roadmap}
                                             onDelete={fetchRoadmaps}
+                                            isSelectable={selectionMode}
+                                            isSelected={selectedCourses.includes(roadmap.id)}
+                                            onSelect={handleSelectCourse}
                                         />
                                     </HoverCard>
                                 </ScrollReveal>
@@ -296,6 +512,54 @@ export default function page() {
                 </div>
             </div>
             <ChatBot />
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete {selectedCourses.length} Course{selectedCourses.length > 1 ? 's' : ''}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the selected course{selectedCourses.length > 1 ? 's' : ''} and all associated data.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={bulkActionLoading}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => handleBulkAction("delete")}
+                            disabled={bulkActionLoading}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {bulkActionLoading ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Archive Confirmation Dialog */}
+            <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {bulkAction === "archive" ? "Archive" : "Unarchive"} {selectedCourses.length} Course{selectedCourses.length > 1 ? 's' : ''}?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {bulkAction === "archive"
+                                ? `This will archive the selected course${selectedCourses.length > 1 ? 's' : ''}. You can restore them later from the archived filter.`
+                                : `This will restore the selected course${selectedCourses.length > 1 ? 's' : ''} to your active courses.`
+                            }
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={bulkActionLoading}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => handleBulkAction(bulkAction)}
+                            disabled={bulkActionLoading}
+                        >
+                            {bulkActionLoading ? "Processing..." : bulkAction === "archive" ? "Archive" : "Unarchive"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
