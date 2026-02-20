@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { loader } from "@/components/ui/Custom/ToastLoader";
 import { useRouter } from "next/navigation";
+import ShareCourse from "@/components/share/ShareCourse";
 
 function Roadmap({ roadMap, id }) {
   const [height, setHeight] = useState((roadMap.chapters.length - 1) * 34 * 4);
@@ -86,16 +87,24 @@ function Roadmap({ roadMap, id }) {
             <p className="text-primary ml-2">{roadMap.courseDescription}</p>
           </div>
           
-          {/* Duplicate Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDuplicate}
-            className="shrink-0 gap-2"
-          >
-            <Copy className="h-4 w-4" />
-            Duplicate
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex gap-2 shrink-0">
+            <ShareCourse
+              courseId={id}
+              courseTitle={roadMap.courseTitle}
+              userId={user?.email}
+              isPublic={roadMap.isPublic || false}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDuplicate}
+              className="gap-2"
+            >
+              <Copy className="h-4 w-4" />
+              Duplicate
+            </Button>
+          </div>
         </div>
         
         {/* Estimated Time Badge */}

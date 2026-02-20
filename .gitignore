@@ -40,7 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-key.json.env.local
+key.json
+.env.local
+.env*.local
 
 # Local documentation files (not to be pushed)
 ISSUES_ROADMAP.md
