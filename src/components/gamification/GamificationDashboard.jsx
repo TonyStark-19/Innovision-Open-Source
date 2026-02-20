@@ -6,9 +6,11 @@ import { AnimatedProgress, CircularProgress } from "@/components/ui/animated-pro
 import { Trophy, Flame, Award, Crown, Medal } from "lucide-react";
 import * as Icons from "lucide-react";
 import xpContext from "@/contexts/xp";
+import GamificationDashboardSkeleton from "@/components/skeletons/GamificationDashboardSkeleton";
 
 export default function GamificationDashboard({ userId }) {
   const { xp } = useContext(xpContext); // Use XP from context for consistency
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     level: 1,
     streak: 0,
@@ -40,6 +42,7 @@ export default function GamificationDashboard({ userId }) {
           rank: 0,
           achievements: [],
         });
+        setLoading(false);
         return;
       }
 
@@ -51,6 +54,7 @@ export default function GamificationDashboard({ userId }) {
         rank: data.rank || 0,
         achievements: data.achievements || [],
       });
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching stats:", error);
       setStats({
@@ -60,12 +64,17 @@ export default function GamificationDashboard({ userId }) {
         rank: 0,
         achievements: [],
       });
+      setLoading(false);
     }
   };
 
   const xpToNextLevel = 500;
   const safeXp = typeof xp === 'number' ? xp : 0;
   const xpProgress = (safeXp % 500) / 5;
+
+  if (loading) {
+    return <GamificationDashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-4">

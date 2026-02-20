@@ -27,6 +27,8 @@ import PremiumDialog from "@/components/PremiumDialog";
 import LockedFeature from "@/components/LockedFeature";
 import { useRouter } from "next/navigation";
 import { PageBackground, GridPattern, ScrollReveal } from "@/components/ui/PageWrapper";
+import ChartSkeleton from "@/components/skeletons/ChartSkeleton";
+import CourseListSkeleton from "@/components/skeletons/CourseListSkeleton";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -211,17 +213,26 @@ export default function ProfilePage() {
               {/* Progress Tab - XP Chart */}
               <TabsContent value="progress" className="space-y-4">
                 <LockedFeature featureName="Progress Analytics" hasAccess={hasAccess} showPreview={true}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>XP Earned</CardTitle>
-                      <CardDescription>Your XP earned data over the last year</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ProblemSolvedChart questions={Object.values(userData?.xptrack || {})} />
-                    </CardContent>
-                  </Card>
+                  {loading ? (
+                    <>
+                      <ChartSkeleton title="XP Earned" description="Your XP earned data over the last year" />
+                      <ChartSkeleton title="XP History" />
+                    </>
+                  ) : (
+                    <>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>XP Earned</CardTitle>
+                          <CardDescription>Your XP earned data over the last year</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ProblemSolvedChart questions={Object.values(userData?.xptrack || {})} />
+                        </CardContent>
+                      </Card>
 
-                  {user?.email && <XPChart userId={user.email} />}
+                      {user?.email && <XPChart userId={user.email} />}
+                    </>
+                  )}
                 </LockedFeature>
               </TabsContent>
 
@@ -235,7 +246,11 @@ export default function ProfilePage() {
                     <CardTitle>Recent Courses</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <RecentCourses courses={recentRoadmaps} loading={loading} />
+                    {loading ? (
+                      <CourseListSkeleton count={4} />
+                    ) : (
+                      <RecentCourses courses={recentRoadmaps} loading={loading} />
+                    )}
                   </CardContent>
                 </Card>
 
@@ -244,7 +259,11 @@ export default function ProfilePage() {
                     <CardTitle>Completed Courses</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <RecentCourses courses={completedRoadmaps} loading={loading} />
+                    {loading ? (
+                      <CourseListSkeleton count={3} />
+                    ) : (
+                      <RecentCourses courses={completedRoadmaps} loading={loading} />
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
