@@ -10,6 +10,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import ChatBot from "@/components/chat/ChatBot";
+import CourseReviews from "@/components/reviews/CourseReviews";
+import { Separator } from "@/components/ui/separator";
 
 // Helper to serialize Firestore Timestamps
 const serializeTimestamps = (data) => {
@@ -79,6 +81,14 @@ const page = async ({ params }) => {
           </BreadcrumbList>
         </Breadcrumb>
         <Roadmap roadMap={roadmap} id={id}></Roadmap>
+        
+        {/* Reviews Section */}
+        <div className="mt-12">
+          <Separator className="mb-8" />
+          <h2 className="text-2xl font-bold mb-6">Course Reviews</h2>
+          <CourseReviews courseId={id} />
+        </div>
+        
         <ChatBot courseId={id} courseTitle={roadmap?.courseTitle} />
       </div>
     </div>
