@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "vitest --run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -81,7 +83,13 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
-    "tailwindcss": "^4"
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@vitest/ui": "^4.0.18",
+    "fast-check": "^4.5.3",
+    "happy-dom": "^20.7.0",
+    "tailwindcss": "^4",
+    "vitest": "^4.0.18"
   },
   "description": "InnoVision is committed to revolutionizing education through intelligent and personalized learning. Our platform breaks the limitations of traditional courses by dynamically generating structured, engaging courses from any user-defined topic. By leveraging AI and machine learning, we create a flexible and adaptive learning environment that tailors content to individual needs.",
   "main": "index.js",
