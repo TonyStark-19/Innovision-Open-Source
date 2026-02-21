@@ -8,20 +8,60 @@ export async function GET(request, { params }) {
 
     if (!userId) {
       return NextResponse.json(
-        { error: "User ID is required" },
+        { success: false, error: "User ID is required" },
         { status: 400 }
       );
     }
 
-    // Get all certificates for the user
+    // userId is the email (URL-decoded automatically by Next.js)
     const certificatesRef = collection(db, "users", userId, "certificates");
-    const q = query(certificatesRef, orderBy("issuedAt", "desc"));
-    const snapshot = await getDocs(q);
 
-    const certificates = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    let snapshot;
+    try {
+      // Try ordered query first (requires Firestore index on issuedAt)
+      const q = query(certificatesRef, orderBy("issuedAt", "desc"));
+      snapshot = await getDocs(q);
+    } catch {
+      // Fallback: fetch all and sort in-memory if index not ready
+      snapshot = await getDocs(certificatesRef);
+    }
+
+    const certificates = snapshot.docs.map((docSnap) => {
+      const data = docSnap.data();
+
+      // Safely serialize issuedAt — Firestore Timestamp is not JSON-safe
+      let issuedAt = null;
+      if (data.issuedAt) {
+        try {
+          issuedAt =
+            typeof data.issuedAt.toDate === "function"
+              ? data.issuedAt.toDate().toISOString()
+              : String(data.issuedAt);
+        } catch {
+          issuedAt = null;
+        }
+      }
+
+      return {
+        id: docSnap.id,
+        certificateId: data.certificateId,
+        userId: data.userId,
+        courseId: data.courseId,
+        courseTitle: data.courseTitle,
+        userName: data.userName,
+        completionDate: data.completionDate,
+        chapterCount: data.chapterCount,
+        issuedAt,
+        verified: data.verified,
+      };
+    });
+
+    // Sort in-memory descending by issuedAt as a safety net
+    certificates.sort((a, b) => {
+      if (!a.issuedAt) return 1;
+      if (!b.issuedAt) return -1;
+      return new Date(b.issuedAt) - new Date(a.issuedAt);
+    });
 
     return NextResponse.json({
       success: true,
@@ -31,7 +71,7 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error("Error fetching certificates:", error);
     return NextResponse.json(
-      { error: "Failed to fetch certificates" },
+      { success: false, error: "Failed to fetch certificates" },
       { status: 500 }
     );
   }

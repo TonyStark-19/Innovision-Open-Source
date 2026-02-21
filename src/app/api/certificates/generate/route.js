@@ -1,56 +1,91 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, doc, getDoc, getDocs, query, where, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
+} from "firebase/firestore";
 import { nanoid } from "nanoid";
 
 export async function POST(request) {
   try {
-    const { userId, courseId } = await request.json();
+    const body = await request.json();
+    const { userId, courseId } = body;
 
+    // Guard: both fields required
     if (!userId || !courseId) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { success: false, error: "Missing required fields: userId and courseId" },
         { status: 400 }
       );
     }
 
-    // Get course details
+    // Get course details — userId is user.email (project primary key)
     const courseRef = doc(db, "users", userId, "roadmaps", courseId);
     const courseSnap = await getDoc(courseRef);
 
     if (!courseSnap.exists()) {
       return NextResponse.json(
-        { error: "Course not found" },
+        { success: false, error: "Course not found" },
         { status: 404 }
       );
     }
 
     const courseData = courseSnap.data();
-    
-    // Check if all chapters are completed
-    const allChaptersCompleted = courseData.chapters?.every(ch => ch.completed) || false;
-    
+
+    // Check all chapters are completed
+    const chapters = courseData.chapters || [];
+    const allChaptersCompleted =
+      chapters.length > 0 && chapters.every((ch) => ch.completed);
+
     if (!allChaptersCompleted) {
       return NextResponse.json(
-        { error: "Course not completed yet" },
+        { success: false, error: "Course not completed yet" },
         { status: 400 }
       );
     }
 
-    // Check if certificate already exists
+    // Return existing certificate if already generated
     const certificatesRef = collection(db, "users", userId, "certificates");
     const existingCerts = await getDocs(
       query(certificatesRef, where("courseId", "==", courseId))
     );
 
     if (!existingCerts.empty) {
-      // Return existing certificate
-      const existingCert = existingCerts.docs[0];
+      const existingDoc = existingCerts.docs[0];
+      const existingData = existingDoc.data();
+
+      // Safely serialize issuedAt — Firestore Timestamp is not JSON-safe
+      let issuedAt = null;
+      if (existingData.issuedAt) {
+        try {
+          issuedAt =
+            typeof existingData.issuedAt.toDate === "function"
+              ? existingData.issuedAt.toDate().toISOString()
+              : String(existingData.issuedAt);
+        } catch {
+          issuedAt = new Date().toISOString();
+        }
+      }
+
       return NextResponse.json({
         success: true,
         certificate: {
-          id: existingCert.id,
-          ...existingCert.data(),
+          id: existingDoc.id,
+          certificateId: existingData.certificateId,
+          userId: existingData.userId,
+          courseId: existingData.courseId,
+          courseTitle: existingData.courseTitle,
+          userName: existingData.userName,
+          completionDate: existingData.completionDate,
+          chapterCount: existingData.chapterCount,
+          issuedAt,
+          verified: existingData.verified,
         },
       });
     }
@@ -58,42 +93,64 @@ export async function POST(request) {
     // Generate unique certificate ID
     const certificateId = nanoid(12);
 
-    // Get user details
+    // Get user display name — guard against missing user doc
+    let userName = "Student";
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      userName = userData.displayName || userData.name || userData.email || "Student";
+    }
 
-    // Create certificate data
-    const certificateData = {
+    // Resolve course title with fallback
+    const courseTitle =
+      courseData.courseTitle || courseData.title || "Untitled Course";
+
+    const chapterCount = chapters.length;
+
+    const completionDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const issuedAtISO = new Date().toISOString();
+
+    // Save to Firestore with serverTimestamp (not JSON-serialized)
+    const certDocData = {
       certificateId,
       userId,
       courseId,
-      courseTitle: courseData.courseTitle,
-      userName: userData?.displayName || userData?.email || "Student",
-      completionDate: new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      chapterCount: courseData.chapters?.length || 0,
+      courseTitle,
+      userName,
+      completionDate,
+      chapterCount,
       issuedAt: serverTimestamp(),
       verified: true,
     };
 
-    // Save certificate to Firestore
-    const certRef = await addDoc(certificatesRef, certificateData);
+    const certRef = await addDoc(certificatesRef, certDocData);
 
+    // Return plain JSON-safe response (no serverTimestamp)
     return NextResponse.json({
       success: true,
       certificate: {
         id: certRef.id,
-        ...certificateData,
+        certificateId,
+        userId,
+        courseId,
+        courseTitle,
+        userName,
+        completionDate,
+        chapterCount,
+        issuedAt: issuedAtISO,
+        verified: true,
       },
     });
   } catch (error) {
     console.error("Error generating certificate:", error);
     return NextResponse.json(
-      { error: "Failed to generate certificate" },
+      { success: false, error: "Failed to generate certificate" },
       { status: 500 }
     );
   }

@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Award, Loader2, ExternalLink } from "lucide-react";
+import { Award, Loader2, ExternalLink, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 import { toast } from "sonner";
@@ -30,7 +30,21 @@ const CertificateDialog = ({ open, onOpenChange, userId, courseId, courseTitle }
     }
   }, [open]);
 
+  // Reset certificate state when dialog closes
+  const handleOpenChange = (isOpen) => {
+    if (!isOpen) {
+      setCertificate(null);
+    }
+    onOpenChange(isOpen);
+  };
+
   const generateCertificate = async () => {
+    // Guard: prevent API call if userId or courseId is missing
+    if (!userId || !courseId) {
+      toast.error("Cannot generate certificate: missing user or course info. Please refresh and try again.");
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch("/api/certificates/generate", {
@@ -39,9 +53,15 @@ const CertificateDialog = ({ open, onOpenChange, userId, courseId, courseTitle }
         body: JSON.stringify({ userId, courseId }),
       });
 
-      const data = await response.json();
+      // Handle non-JSON response gracefully
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Invalid server response");
+      }
 
-      if (data.success) {
+      if (data.success && data.certificate) {
         setCertificate(data.certificate);
         toast.success("Certificate generated successfully!");
 
@@ -52,22 +72,19 @@ const CertificateDialog = ({ open, onOpenChange, userId, courseId, courseTitle }
           origin: { y: 0.6 },
         });
       } else {
-        toast.error(data.error || "Failed to generate certificate");
+        // Show the specific server-side error when available
+        const msg = data.error || "Failed to generate certificate";
+        toast.error(msg);
       }
     } catch (error) {
       console.error("Error generating certificate:", error);
-      toast.error("Failed to generate certificate");
+      toast.error("Failed to generate certificate. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenChange = (isOpen) => {
-    if (!isOpen) {
-      setCertificate(null);
-    }
-    onOpenChange(isOpen);
-  };
+  const missingInfo = !userId || !courseId;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -78,7 +95,7 @@ const CertificateDialog = ({ open, onOpenChange, userId, courseId, courseTitle }
             Congratulations! Course Completed
           </DialogTitle>
           <DialogDescription>
-            You've completed all chapters in "{courseTitle}"
+            You&apos;ve completed all chapters in &quot;{courseTitle}&quot;
           </DialogDescription>
         </DialogHeader>
 
@@ -90,9 +107,17 @@ const CertificateDialog = ({ open, onOpenChange, userId, courseId, courseTitle }
               <p className="text-muted-foreground mb-6">
                 Generate your certificate of completion to showcase your achievement
               </p>
+
+              {missingInfo ? (
+                <div className="flex items-center gap-2 text-sm text-destructive justify-center mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Session loading — please wait a moment and try again.</span>
+                </div>
+              ) : null}
+
               <Button
                 onClick={generateCertificate}
-                disabled={loading}
+                disabled={loading || missingInfo}
                 size="lg"
                 className="gap-2"
               >
